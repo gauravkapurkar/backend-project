@@ -179,14 +179,14 @@ const refreshAccessToken = asyncHandler(async(req, res)=>{
             throw new ApiError(401, "Invalid refresh token or expired");
         }
     
-        const { accessToken, newRefreshToken} = await generateAccessAndRefreshTokens(user._id);
+        const { accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id);
     
         res.status(200)
-        .cookie("accessToken", options)
-        .cookie("newRefreshToken", options)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
         .json(
             new ApiResponse(200, 
-                {accessToken, newRefreshToken},
+                {accessToken, refreshToken},
                 "Access token refresh success"
             )
         )
