@@ -1,7 +1,7 @@
 import {asyncHandler} from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js";
 import {User} from "../models/user.model.js";
-import {uploadOnCloudinary} from "../utils/cloudinary.js";
+import {deleteFromCloudinary, uploadOnCloudinary} from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 
@@ -234,7 +234,7 @@ const updateAccountDetails = asyncHandler(async(req, res)=>{
         throw new ApiError(400, "All fields required")
     }
 
-    const user = User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set : {
@@ -264,7 +264,7 @@ const updateUserAvatar = asyncHandler(async(req, res)=>{
         throw new ApiError(400, "Error while uploading avatar");
     }
 
-    const user = User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set:{
@@ -276,6 +276,12 @@ const updateUserAvatar = asyncHandler(async(req, res)=>{
         }
         
     ).select("-password");
+
+    //TODO: delete old image after updating image
+    const oldAvatarUrl = req.user?.avatar;
+    const avatarPublicId = oldAvatarUrl.split("/")[7].split(".")[0];
+    console.log("avatarPublicId "+avatarPublicId);
+    await deleteFromCloudinary(avatarPublicId);
 
     return res.status(200)
     .json(
@@ -294,7 +300,7 @@ const updateUserCoverImage = asyncHandler(async(req, res)=>{
         throw new ApiError(400, "Error while uploading Cover Image");
     }
 
-    const user = User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set:{
@@ -306,6 +312,12 @@ const updateUserCoverImage = asyncHandler(async(req, res)=>{
         }
         
     ).select("-password");
+
+    //TODO: delete old image after updating image
+    const oldCoverImageUrl = req.user?.coverImage;
+    const coverImagePublicId = oldCoverImageUrl.split("/")[7].split(".")[0];
+    console.log("coverImagePublicId",coverImagePublicId);
+    await deleteFromCloudinary(coverImagePublicId);
 
     return res.status(200)
     .json(
